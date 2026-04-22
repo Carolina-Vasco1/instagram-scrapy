@@ -1,5 +1,7 @@
 import scrapy
 
+# Organizar tabla o modelo de datos de datos extraidos
+
 class InstagramScraperItem(scrapy.Item):
     username = scrapy.Field()
     full_name = scrapy.Field()

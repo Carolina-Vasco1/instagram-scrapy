@@ -3,17 +3,18 @@ import re
 
 class IgSpiderSpider(scrapy.Spider):
     name = "ig_spider"
-    allowed_domains = ["instagram.com"]
+    allowed_domains = ["instagram.com"] #solo a un dominio, no a otros
 
     # --- CONFIGURACIÓN DE COOKIES ---
-    # Reemplaza los valores con los que obtengas de tu navegador (F12 > Application > Cookies)
+    #usuario logueado
+    # Reemplaza los valores con los que obtengas de tu navegador, aquí se guardan las cookies del navegador
     cookies = {
         'sessionid': '4003120443%3ArEXdN2A8hzthxG%3A11%3AAYiNlVAPhOxIuFq7cFj04Nn1zok5T7S5SrUWo-LXIg',
         'ds_user_id': '4003120443',
         'csrftoken': 'AYQ4XiCUBykFSaEBFgfnfOBs3A6yIhuP',
     }
 
-    def start_requests(self):
+    def start_requests(self): 
         # El programa se detendrá aquí y esperará a que escribas en la consola
         print("\n" + "="*30)
         entrada = input("AGREGAR USUARIO (separa por comas si son varios): ")
@@ -22,18 +23,18 @@ class IgSpiderSpider(scrapy.Spider):
         # Convertimos la entrada en una lista
         lista_usuarios = [u.strip() for u in entrada.split(',') if u.strip()]
 
-        if not lista_usuarios:
+        if not lista_usuarios: #sino ingresa nada, se detiene el programa
             self.logger.error("No ingresaste ningún usuario válido.")
             return
 
-        for usuario in lista_usuarios:
+        for usuario in lista_usuarios: #recorre cada ususrio ingresado
             url = f"https://www.instagram.com/{usuario}/"
             # Enviamos la petición con tus cookies
             yield scrapy.Request(url=url, cookies=self.cookies, callback=self.parse)
 
     def parse(self, response):
         # 1. Extraer el nombre de usuario de la URL
-        username = response.url.split('/')[-2]
+        username = response.url.split('/')[-2] #penúltimo elemento
 
         # 2. Extraer estadísticas desde los Meta Tags (seguidores, seguidos, posts)
         # Instagram pone esto en <meta name="description" content="...">
@@ -45,7 +46,7 @@ class IgSpiderSpider(scrapy.Spider):
 
         if description:
             # Usamos regex para encontrar números o abreviaturas como 1.5K, 2M, etc.
-            stats = re.findall(r"([\d\.\,KkMm]+)", description)
+            stats = re.findall(r"(\d[\d,\.]*\s?[KkMm]?)", description)
             if len(stats) >= 3:
                 followers = stats[0]
                 following = stats[1]
@@ -53,7 +54,7 @@ class IgSpiderSpider(scrapy.Spider):
 
         # 3. Extraer Nombre Completo
         full_name_raw = response.xpath('//meta[@property="og:title"]/@content').get()
-        full_name = full_name_raw.split('(@')[0].strip() if full_name_raw else username
+        full_name = full_name_raw.split('(@')[0].strip() if full_name_raw else username # quita el @del usuario 
 
         # 4. Extraer Biografía
         bio = response.xpath('//meta[@property="og:description"]/@content').get()

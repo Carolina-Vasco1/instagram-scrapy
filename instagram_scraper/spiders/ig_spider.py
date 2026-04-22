@@ -14,15 +14,21 @@ class IgSpiderSpider(scrapy.Spider):
     }
 
     def start_requests(self):
-        # Lista de usuarios corregida (sin errores de sintaxis)
-        urls = [
-            "https://www.instagram.com/santhimendez_ff/",
-            "https://www.instagram.com/psykhe_memes_uce/",
-            "https://www.instagram.com/willy_ec_/"
-        ]
-        
-        for url in urls:
-            # Enviamos la petición con cookies para evitar bloqueos y ver perfiles
+        # El programa se detendrá aquí y esperará a que escribas en la consola
+        print("\n" + "="*30)
+        entrada = input("AGREGAR USUARIO (separa por comas si son varios): ")
+        print("="*30 + "\n")
+
+        # Convertimos la entrada en una lista
+        lista_usuarios = [u.strip() for u in entrada.split(',') if u.strip()]
+
+        if not lista_usuarios:
+            self.logger.error("No ingresaste ningún usuario válido.")
+            return
+
+        for usuario in lista_usuarios:
+            url = f"https://www.instagram.com/{usuario}/"
+            # Enviamos la petición con tus cookies
             yield scrapy.Request(url=url, cookies=self.cookies, callback=self.parse)
 
     def parse(self, response):
